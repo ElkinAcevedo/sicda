@@ -12,9 +12,11 @@ El paquete se instala en modo editable y lo importan **tanto los scripts de entr
 | `configuracion.py` | Cargar un YAML de `configs/` combinado con `base.yaml`. | — |
 | `datos.py` | Cargar WOS-46985, limpiar, generar `categorias.json` y dividir 70/15/15. | I |
 | `preprocesamiento.py` | Normalización, *stopwords* y lematización en inglés. | II |
-| `jerarquico.py` | Clasificador de dominio + un clasificador de área por dominio. | III |
-| `entrenamiento.py` | Entrenar cada modelo candidato a partir de un archivo de `configs/`. | III |
-| `evaluacion.py` | Precisión, recall, F1 y matrices de confusión por nivel. | III |
+| `evaluacion.py` | Accuracy, precisión, recall, F1 (macro y ponderado) y matrices de confusión por nivel. | III |
+| `jerarquico.py` | `ClasificadorJerarquico` (dominio + área por dominio) y `ClasificadorPlano`. | III |
+| `entrenamiento.py` | Búsqueda de hiperparámetros, calibración y artefactos de NB y SVM. | III |
+| `seleccion.py` | Regla de elección del modelo y calibración de los umbrales de revisión. | III |
+| `artefactos.py` | Leer versiones de `models/` y publicar el modelo activo. | III |
 
 ## Preparar el dataset (Fase I)
 
@@ -48,6 +50,48 @@ modelo = make_pipeline(Preprocesador.desde_configuracion(), TfidfVectorizer(...)
 ```
 
 Para DistilBERT basta con `normalizar(texto)` (pasos 1 y 2), porque usa su propio tokenizador.
+
+## Entrenar los modelos clásicos (Fase III)
+
+```bash
+python -m clasificador_ml.entrenamiento --config ml/configs/naive_bayes.yaml
+python -m clasificador_ml.entrenamiento --config ml/configs/svm.yaml
+# Prueba rápida con el 10 % de los datos (~40 s):
+python -m clasificador_ml.entrenamiento --config ml/configs/svm.yaml --muestra 0.1 --version humo
+```
+
+Cada corrida entrena el clasificador **jerárquico** (1 modelo de dominio + 1 de área por cada
+uno de los 7 dominios) y el **plano** (las 136 áreas), y los evalúa en validación. Cada
+submodelo es un `Pipeline(TF-IDF, clasificador)` con su propio vocabulario; sus
+hiperparámetros se eligen con `GridSearchCV` (5 particiones estratificadas sobre train,
+F1-macro). En el SVM la búsqueda se hace sin calibrar y solo el mejor `C` se calibra
+(`CalibratedClassifierCV`, sigmoide).
+
+Resultado en `models/<algoritmo>/<version>/`:
+
+| Archivo | Contenido |
+| --- | --- |
+| `jerarquico.joblib`, `plano.joblib` | Modelos con el `Preprocesador` incluido (reciben texto crudo). |
+| `predicciones_val_<tipo>.parquet` | Predicciones y confianzas en validación. |
+| `metadatos.json` | Configuración, hiperparámetros por submodelo, métricas y tiempos. |
+
+```python
+from clasificador_ml.artefactos import cargar_modelo
+
+modelo = cargar_modelo("linear_svc", "jerarquico")      # la versión más reciente
+modelo.predecir_detallado(["Deep convolutional networks for image segmentation ..."])
+# [{'dominio': {'id', 'confianza', 'alternativas'}, 'area': {...}, 'confianza_conjunta',
+#   'requiere_revision', 'terminos_clave': [{'termino', 'peso'}, ...]}]
+```
+
+**Decodificación.** Se elige el dominio con mayor `P(dominio)` y, dentro de él, el área con
+mayor `P(área | dominio)`; la confianza conjunta es el producto. El plano (y DistilBERT) obtiene
+`P(dominio)` sumando las probabilidades de sus áreas. «Requiere revisión» si
+`P(dominio) < 0,60` o la conjunta `< 0,40` (se calibran en el notebook 05).
+
+DistilBERT se entrena en Google Colab con `notebooks/04-distilbert-colab.ipynb`; el notebook 05
+compara todos los modelos, calibra los umbrales, evalúa **una sola vez** en test y escribe
+`models/activo.json`.
 
 ## Configuraciones
 
