@@ -1,13 +1,15 @@
 import json
+import subprocess
+import sys
 
 import joblib
 import numpy as np
 import pandas as pd
 import pytest
 
+from clasificador_ml.busqueda import BusquedaYCalibracion
 from clasificador_ml.configuracion import cargar_configuracion
 from clasificador_ml.entrenamiento import (
-    BusquedaYCalibracion,
     construir_estimador,
     entrenar,
     main,
@@ -187,3 +189,31 @@ def test_main_entrena_solo_el_tipo_pedido(datos, tmp_path):
 def test_entrenar_sin_datos_da_error_claro(tmp_path):
     with pytest.raises(FileNotFoundError, match="preprocesamiento"):
         entrenar(_config("naive_bayes.yaml"), origen=tmp_path, destino=tmp_path)
+
+
+def test_modelo_entrenado_con_python_m_se_carga_desde_otro_proceso(datos, tmp_path):
+    # Si alguna clase quedara registrada como `__main__`, la API no podría cargar el modelo.
+    comando = [
+        sys.executable,
+        "-m",
+        "clasificador_ml.entrenamiento",
+        "--config",
+        str(CONFIGURACIONES / "naive_bayes.yaml"),
+        "--tipo",
+        "jerarquico",
+        "--version",
+        "proceso",
+        "--origen",
+        str(datos),
+        "--destino",
+        str(tmp_path),
+        "--procesos",
+        "1",
+        "--docs-tiempo",
+        "1",
+    ]
+    subprocess.run(comando, check=True, capture_output=True)
+
+    modelo = joblib.load(tmp_path / "complement_nb" / "proceso" / "jerarquico.joblib")
+
+    assert modelo.predict(["The heart artery blood pressure."]).tolist() == [21]

@@ -14,7 +14,8 @@ El paquete se instala en modo editable y lo importan **tanto los scripts de entr
 | `preprocesamiento.py` | Normalización, *stopwords* y lematización en inglés. | II |
 | `evaluacion.py` | Accuracy, precisión, recall, F1 (macro y ponderado) y matrices de confusión por nivel. | III |
 | `jerarquico.py` | `ClasificadorJerarquico` (dominio + área por dominio) y `ClasificadorPlano`. | III |
-| `entrenamiento.py` | Búsqueda de hiperparámetros, calibración y artefactos de NB y SVM. | III |
+| `busqueda.py` | `BusquedaYCalibracion`: `GridSearchCV` + calibración del mejor modelo. | III |
+| `entrenamiento.py` | CLI que entrena NB y SVM y guarda los artefactos versionados. | III |
 | `seleccion.py` | Regla de elección del modelo y calibración de los umbrales de revisión. | III |
 | `artefactos.py` | Leer versiones de `models/` y publicar el modelo activo. | III |
 
@@ -78,7 +79,7 @@ Resultado en `models/<algoritmo>/<version>/`:
 ```python
 from clasificador_ml.artefactos import cargar_modelo
 
-modelo = cargar_modelo("linear_svc", "jerarquico")      # la versión más reciente
+modelo = cargar_modelo("linear_svc", "jerarquico")  # la versión más reciente
 modelo.predecir_detallado(["Deep convolutional networks for image segmentation ..."])
 # [{'dominio': {'id', 'confianza', 'alternativas'}, 'area': {...}, 'confianza_conjunta',
 #   'requiere_revision', 'terminos_clave': [{'termino', 'peso'}, ...]}]
