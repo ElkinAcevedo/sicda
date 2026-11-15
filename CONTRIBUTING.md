@@ -1,6 +1,6 @@
 # Guía de contribución
 
-Reglas de trabajo del equipo para mantener el repositorio ordenado y la rama `main` siempre funcional.
+Reglas de trabajo para mantener el repositorio ordenado y la rama `main` siempre funcional.
 
 ## Ramas
 
@@ -13,7 +13,7 @@ Reglas de trabajo del equipo para mantener el repositorio ordenado y la rama `ma
 | `docs/<descripcion-corta>` | Solo documentación. |
 | `exp/<descripcion-corta>` | Experimentos de modelos y notebooks. |
 
-Flujo: crea tu rama desde `develop` → haz commits pequeños → abre un *pull request* hacia `develop` → otro integrante lo revisa → se fusiona.
+Flujo: crea tu rama desde `develop` → haz commits pequeños → abre un *pull request* hacia `develop` → revisa el diff y espera a que pase CI → se fusiona.
 
 ```bash
 git switch develop

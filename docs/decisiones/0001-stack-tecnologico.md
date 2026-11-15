@@ -5,7 +5,7 @@
 
 ## Contexto
 
-El sistema necesita PLN y aprendizaje automático, una API y un dashboard web, y debe poder levantarlo cualquier integrante en Windows, Linux o macOS.
+El sistema necesita PLN y aprendizaje automático, una API y un dashboard web, y debe poder levantarse en Windows, Linux o macOS.
 
 ## Decisión
 
@@ -24,4 +24,4 @@ El sistema necesita PLN y aprendizaje automático, una API y un dashboard web, y
 
 ## Consecuencias
 
-El equipo trabaja en dos lenguajes (Python y TypeScript). A cambio, la API queda desacoplada de la interfaz y el contrato JSON está tipado en ambos lados.
+El proyecto usa dos lenguajes (Python y TypeScript). A cambio, la API queda desacoplada de la interfaz y el contrato JSON está tipado en ambos lados.
