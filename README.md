@@ -30,7 +30,7 @@ Proyecto Integrador · Universidad de Pamplona · 2026
 - [Dataset](#dataset)
 - [Hoja de ruta](#hoja-de-ruta)
 - [Cómo contribuir](#cómo-contribuir)
-- [Equipo](#equipo)
+- [Autor](#autor)
 
 ## Descripción
 
@@ -211,13 +211,9 @@ El dataset **no se incluye en el repositorio** por su tamaño. Las instrucciones
 
 Lee la [guía de contribución](CONTRIBUTING.md): flujo de ramas, convención de commits y cómo abrir un *pull request*.
 
-## Equipo
+## Autor
 
-| Integrante | Rol |
-| --- | --- |
-| Elkin David Acevedo Florez | Por definir |
-| Diego Rodriges | Por definir |
-| Wilson Alexander Nova | Por definir |
+**Elkin David Acevedo Florez** · Universidad de Pamplona
 
 ## Referencias
 

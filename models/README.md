@@ -1,6 +1,6 @@
 # Modelos entrenados
 
-Los artefactos `.joblib` **no se suben a GitHub**. Se generan con el pipeline de `ml/` o se comparten entre el equipo por otro medio (Drive o GitHub Releases).
+Los artefactos `.joblib` **no se suben a GitHub**. Se generan con el pipeline de `ml/` o se publican por otro medio (Drive o GitHub Releases).
 
 ## Convención de carpetas
 
