@@ -20,6 +20,12 @@ jobs:
           uv pip install -e "ml[dev]" -e "backend[dev]"
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
+      - name: Recursos de PLN (spaCy en_core_web_sm y stopwords de NLTK)
+        run: |
+          SPACY=$(.venv/bin/python -c "import spacy; a, b, *_ = spacy.__version__.split('.'); print(f'{a}.{b}.0')")
+          uv pip install "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-${SPACY}/en_core_web_sm-${SPACY}-py3-none-any.whl"
+          .venv/bin/python -m nltk.downloader -q stopwords
+
       - name: Lint (ruff)
         run: ruff check backend ml
 
