@@ -59,4 +59,7 @@ Resultado en `processed/`:
 Columnas de cada partición: `id_documento` (fila original del Excel), `texto` (resumen),
 `palabras_clave`, `id_dominio`, `dominio`, `id_area`, `area` e `y_original` (`Y` del dataset).
 
+Después, `python -m clasificador_ml.preprocesamiento` escribe en `processed/preprocesado/` las
+mismas particiones con la columna `texto_procesado` (texto limpio y lematizado para TF-IDF).
+
 Por qué son 136 áreas y no 134: ver [ADR 0002](../docs/decisiones/0002-etiquetas-wos.md).

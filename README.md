@@ -202,7 +202,7 @@ El dataset **no se incluye en el repositorio** por su tamaño. Las instrucciones
 | Fase | Semanas | Estado |
 | --- | --- | --- |
 | I. Revisión y preparación de los datos | 1–2 | ✅ Dataset limpio y particionado ([ADR 0002](docs/decisiones/0002-etiquetas-wos.md)) |
-| II. Extracción y procesamiento del texto | 2–4 | ⏳ Pendiente |
+| II. Extracción y procesamiento del texto | 2–4 | ✅ Extracción PDF/DOCX/TXT y preprocesamiento con pruebas |
 | III. Entrenamiento y evaluación de modelos | 4–7 | ⏳ Pendiente |
 | IV. Desarrollo e integración de la aplicación | 6–9 | 🚧 Estructura base y entorno listos |
 | V. Pruebas, ajustes y documentación | 10–12 | ⏳ Pendiente |

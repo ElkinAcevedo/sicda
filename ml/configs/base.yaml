@@ -6,6 +6,11 @@ datos:
   # Ver docs/decisiones/0002-etiquetas-wos.md.
   min_documentos_por_area: 10
 
+preprocesamiento:
+  lematizar: true
+  quitar_stopwords: true
+  longitud_minima_token: 2
+
 particion:
   entrenamiento: 0.70
   validacion: 0.15

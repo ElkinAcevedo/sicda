@@ -26,6 +26,29 @@ python -m clasificador_ml.datos
 
 Genera `data/processed/{train,val,test}.parquet` y `categorias.json`. Las reglas de etiquetado están en [ADR 0002](../docs/decisiones/0002-etiquetas-wos.md).
 
+## Preprocesar el texto (Fase II)
+
+```bash
+python -m clasificador_ml.preprocesamiento --procesos 4   # ~2,5 min con 4 procesos
+```
+
+Genera `data/processed/preprocesado/{train,val,test}.parquet` con la columna `texto_procesado`.
+Los pasos (sección 6.2 del diseño) son: minúsculas y Unicode → quitar URL, correos, números y
+puntuación → lematizar con spaCy → quitar *stopwords* de NLTK. Se lematiza antes de quitar las
+*stopwords* para que spaCy vea la frase completa.
+
+`Preprocesador` es un transformador de scikit-learn, así que se guarda **dentro** del pipeline
+del modelo y la API procesa el texto igual que el entrenamiento:
+
+```python
+from clasificador_ml.preprocesamiento import Preprocesador
+from sklearn.pipeline import make_pipeline
+
+modelo = make_pipeline(Preprocesador.desde_configuracion(), TfidfVectorizer(...), LinearSVC())
+```
+
+Para DistilBERT basta con `normalizar(texto)` (pasos 1 y 2), porque usa su propio tokenizador.
+
 ## Configuraciones
 
 `configs/base.yaml` define la semilla, la partición y los parámetros de TF-IDF. Cada modelo tiene su archivo:
