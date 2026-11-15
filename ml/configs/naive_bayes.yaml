@@ -1,3 +1,6 @@
 modelo: complement_nb
+# Las probabilidades de ComplementNB son casi uniformes (máx. ≈ 0,014 entre 136 áreas), así que
+# no sirven como confianza ni para sumar P(dominio). Se calibran igual que el SVM (sigmoide).
+calibrar_probabilidades: true
 hiperparametros:
   alpha: [0.1, 0.3, 1.0]

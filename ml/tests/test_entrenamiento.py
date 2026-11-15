@@ -73,7 +73,8 @@ def test_construir_estimador_nb():
     estimador = construir_estimador(_config("naive_bayes.yaml"))
 
     assert estimador.parametros == {"clf__alpha": [0.1, 0.3, 1.0]}
-    assert estimador.calibrar is False
+    # Se calibra porque las probabilidades de ComplementNB son casi uniformes.
+    assert estimador.calibrar is True
 
 
 def test_construir_estimador_rechaza_algoritmo_desconocido():
