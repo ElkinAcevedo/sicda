@@ -47,10 +47,17 @@ def test_metricas_nivel_promedia_solo_las_clases_reales():
     assert metricas["precision_macro"] == pytest.approx(2 / 3)
 
 
-def test_area_jerarquica_anula_el_area_si_el_dominio_falla():
-    resultado = area_jerarquica([0, 1], [0, 0], [5, 6])
+def test_area_jerarquica_solo_anula_aciertos_con_dominio_incorrecto():
+    resultado = area_jerarquica([0, 1, 1], [0, 0, 0], [5, 6, 7], [5, 6, 3])
 
-    assert resultado.tolist() == [5, FUERA_DEL_DOMINIO]
+    # El tercero se deja: es un error que cuenta como falso positivo del área 3.
+    assert resultado.tolist() == [5, FUERA_DEL_DOMINIO, 3]
+
+
+def test_evaluar_jerarquico_coincide_con_area_si_el_modelo_es_coherente():
+    informe = evaluar(DOMINIO_REAL, DOMINIO_PRED, AREA_REAL, AREA_PRED)
+
+    assert informe["jerarquico"] == pytest.approx(informe["area"])
 
 
 def test_evaluar_calcula_los_tres_niveles():

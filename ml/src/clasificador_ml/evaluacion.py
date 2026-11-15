@@ -6,6 +6,10 @@ Niveles que se reportan:
 - `area`: las 136 áreas (`id_area`, único en todo el dataset).
 - `jerarquico`: el documento cuenta como acierto solo si el dominio **y** el área son
   correctos. El F1-macro jerárquico es el criterio de selección de modelos.
+
+Como `id_area` es único en todo el dataset y los clasificadores siempre eligen un área del
+dominio predicho, el nivel jerárquico coincide con el de área. Solo difiere si un modelo
+predice un área correcta con un dominio incorrecto: ese caso se cuenta como error.
 """
 
 from __future__ import annotations
@@ -24,7 +28,7 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
 )
 
-# Etiqueta que se asigna al área cuando el dominio predicho es incorrecto.
+# Etiqueta del área cuando el dominio predicho es incorrecto (no es ninguna clase real).
 FUERA_DEL_DOMINIO = -1
 
 
@@ -54,11 +58,17 @@ def metricas_nivel(y_real: Sequence, y_pred: Sequence, etiquetas: Sequence | Non
 
 
 def area_jerarquica(
-    dominio_real: Sequence, dominio_pred: Sequence, area_pred: Sequence
+    dominio_real: Sequence, dominio_pred: Sequence, area_real: Sequence, area_pred: Sequence
 ) -> np.ndarray:
-    """Área predicha, reemplazada por `FUERA_DEL_DOMINIO` cuando el dominio está mal."""
+    """Área predicha, salvo que sea correcta con un dominio incorrecto (`FUERA_DEL_DOMINIO`).
+
+    Un área equivocada se deja tal cual para que cuente como falso positivo de esa área; si se
+    reemplazara, el F1 jerárquico saldría mayor que el de área.
+    """
     dominio_real, dominio_pred = np.asarray(dominio_real), np.asarray(dominio_pred)
-    return np.where(dominio_real == dominio_pred, np.asarray(area_pred), FUERA_DEL_DOMINIO)
+    area_real, area_pred = np.asarray(area_real), np.asarray(area_pred)
+    acierto_sin_dominio = (area_pred == area_real) & (dominio_pred != dominio_real)
+    return np.where(acierto_sin_dominio, FUERA_DEL_DOMINIO, area_pred)
 
 
 def evaluar(
@@ -69,7 +79,7 @@ def evaluar(
 ) -> dict[str, dict[str, float]]:
     """Métricas de los tres niveles: `dominio`, `area` y `jerarquico`."""
     area_real = np.asarray(area_real)
-    jerarquica = area_jerarquica(dominio_real, dominio_pred, area_pred)
+    jerarquica = area_jerarquica(dominio_real, dominio_pred, area_real, area_pred)
     return {
         "dominio": metricas_nivel(dominio_real, dominio_pred),
         "area": metricas_nivel(area_real, area_pred),
@@ -134,13 +144,13 @@ def matrices_area_por_dominio(
     """
     dominio_real = np.asarray(dominio_real)
     area_real = np.asarray(area_real)
-    jerarquica = area_jerarquica(dominio_real, dominio_pred, area_pred)
+    enviada = np.where(dominio_real == np.asarray(dominio_pred), area_pred, FUERA_DEL_DOMINIO)
     nombres = {**(nombres_area or {}), FUERA_DEL_DOMINIO: "otro dominio"}
     matrices = {}
     for dominio, areas in areas_por_dominio.items():
         mascara = dominio_real == dominio
         etiquetas = [*areas, FUERA_DEL_DOMINIO]
-        matriz = matriz_confusion(area_real[mascara], jerarquica[mascara], etiquetas, nombres)
+        matriz = matriz_confusion(area_real[mascara], enviada[mascara], etiquetas, nombres)
         # La fila «otro dominio» siempre está vacía: el área real pertenece al dominio.
         matrices[dominio] = matriz.drop(index=nombres[FUERA_DEL_DOMINIO])
     return matrices
