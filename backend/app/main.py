@@ -4,12 +4,23 @@ Ejecutar en desarrollo:
     uvicorn app.main:app --reload
 """
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.api.v1.router import api_router
 from app.core.config import settings
+from app.db.sesion import crear_tablas
+
+
+@asynccontextmanager
+async def ciclo_de_vida(_aplicacion: FastAPI) -> AsyncIterator[None]:
+    """Al iniciar: crea las tablas que falten en la base de datos."""
+    crear_tablas()
+    yield
 
 
 def create_app() -> FastAPI:
@@ -20,6 +31,7 @@ def create_app() -> FastAPI:
         version=__version__,
         docs_url="/docs",
         redoc_url="/redoc",
+        lifespan=ciclo_de_vida,
     )
     aplicacion.add_middleware(
         CORSMiddleware,

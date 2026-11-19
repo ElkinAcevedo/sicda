@@ -15,3 +15,11 @@ def test_salud_responde_activo():
 
 def test_documentacion_openapi_disponible():
     assert cliente.get("/openapi.json").status_code == 200
+
+
+def test_al_iniciar_crea_las_tablas(monkeypatch):
+    llamadas = []
+    monkeypatch.setattr("app.main.crear_tablas", lambda: llamadas.append(True))
+    with TestClient(app):
+        pass
+    assert llamadas == [True]
