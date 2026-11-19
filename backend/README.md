@@ -45,6 +45,28 @@ Todas las variables usan el prefijo `CLASIFICADOR_` y se leen del archivo `.env`
 | `CLASIFICADOR_UMBRAL_CONFIANZA_CONJUNTA` | `0.40` | Umbral de la confianza dominio × área. |
 | `CLASIFICADOR_ORIGENES_CORS` | `["http://localhost:5173"]` | Orígenes permitidos (frontend). |
 
+## Persistencia
+
+`app/db/` implementa el modelo de datos de la sección 5.2 del diseño con SQLAlchemy 2.0:
+
+| Archivo | Contenido |
+| --- | --- |
+| `sesion.py` | `crear_motor(url)`, `SesionLocal`, `crear_tablas()` y la dependencia `obtener_sesion`. |
+| `modelos.py` | Tablas `documento`, `clasificacion`, `correccion` y `modelo`. |
+| `repositorios.py` | Funciones de lectura y escritura (historial paginado y filtrado, modelo activo, correcciones). |
+
+- Las tablas se crean al iniciar la API (`crear_tablas` en el *lifespan*); no hay migraciones.
+- En SQLite se activan las claves foráneas, y un índice único parcial garantiza que haya
+  **como máximo un modelo activo**. `activar_modelo` desactiva los demás.
+- `documento.hash_sha256` es único: el mismo archivo (o el mismo texto pegado, sin contar los
+  espacios) se guarda una sola vez y cada nueva clasificación se le asocia.
+- Una clasificación tiene como máximo una corrección; una corrección nueva reemplaza a la anterior.
+- Las fechas se guardan en UTC sin zona horaria; los filtros `desde` y `hasta` aceptan fechas
+  con zona y las convierten. Una fecha sin hora en `hasta` incluye el día completo.
+- Campos agregados al diseño, para reconstruir la respuesta de `GET /clasificaciones/{id}` sin
+  volver a clasificar: `documento.fuente_texto`, `documento.palabras_clave`,
+  `clasificacion.conf_conjunta` y `clasificacion.advertencias`.
+
 ## Endpoints
 
 | Método | Ruta | Estado |
