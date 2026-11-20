@@ -342,6 +342,7 @@ def test_al_iniciar_registra_todos_los_modelos(monkeypatch, fabrica_sesiones, di
     monkeypatch.setattr(settings, "ruta_datos", datos)
     monkeypatch.setattr(principal, "crear_tablas", lambda: None)
     monkeypatch.setattr(principal, "SesionLocal", fabrica_sesiones)
+    monkeypatch.setattr("app.db.sesion.SesionLocal", fabrica_sesiones)
     monkeypatch.setattr(principal, "cargar_servicio", lambda *_: None)
     monkeypatch.setattr(principal, "cargar_catalogo", lambda _ruta: Catalogo(CATEGORIAS))
 
