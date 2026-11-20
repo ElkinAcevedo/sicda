@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api, type Clasificacion } from '@/api/cliente'
 import { ProgresoEtapas } from '@/components/ProgresoEtapas'
@@ -55,12 +55,21 @@ export function Clasificar() {
     void clasificar(() => api.clasificarArchivo(archivo))
   }
 
+  // «Probar con un ejemplo» solo llena el formulario: el usuario lo lee y decide si clasificarlo.
+  const areaTexto = useRef<HTMLTextAreaElement>(null)
+  const [ejemploCargado, setEjemploCargado] = useState(0)
+
   function probarEjemplo() {
     setPestana('texto')
     setTitulo(EJEMPLO.titulo)
     setTexto(EJEMPLO.texto)
-    void clasificar(() => api.clasificarTexto(EJEMPLO.texto, EJEMPLO.titulo))
+    setError(null)
+    setEjemploCargado((n) => n + 1)
   }
+
+  useEffect(() => {
+    if (ejemploCargado) areaTexto.current?.focus()
+  }, [ejemploCargado])
 
   const palabras = contarPalabras(texto)
 
@@ -129,6 +138,7 @@ export function Clasificar() {
             <label className="flex flex-col gap-1 text-sm font-medium">
               Resumen (abstract) en inglés
               <textarea
+                ref={areaTexto}
                 value={texto}
                 onChange={(evento) => setTexto(evento.target.value)}
                 rows={9}
@@ -182,7 +192,8 @@ function UltimasClasificaciones() {
       {error !== null && <Aviso tono="info">No se pudieron cargar las últimas clasificaciones.</Aviso>}
       {datos && datos.elementos.length === 0 && (
         <Aviso tono="info" titulo="Todavía no hay clasificaciones">
-          Sube un documento o usa «Probar con un ejemplo» para ver cómo funciona.
+          Sube un documento, o usa «Probar con un ejemplo» y luego «Clasificar» para ver cómo
+          funciona.
         </Aviso>
       )}
       {datos && datos.elementos.length > 0 && (

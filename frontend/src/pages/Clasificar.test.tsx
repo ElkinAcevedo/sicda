@@ -54,11 +54,20 @@ test('un error de la API se muestra con una acción sugerida', async () => {
   expect(alerta).toHaveTextContent('Pega el resumen completo')
 })
 
-test('«Probar con un ejemplo» clasifica el resumen de ejemplo', async () => {
+test('«Probar con un ejemplo» llena el formulario sin clasificar', async () => {
   const llamadas = simularApi({ ...BASE, 'POST /clasificaciones/texto': { estado: 201, cuerpo: CLASIFICACION } })
   renderizarEn('/')
   fireEvent.click(screen.getByRole('button', { name: 'Probar con un ejemplo' }))
 
+  // El ejemplo queda a la vista para leerlo; todavía no se envía nada.
+  const resumen = screen.getByLabelText('Resumen (abstract) en inglés')
+  expect(resumen).toHaveValue(EJEMPLO.texto)
+  expect(resumen).toHaveFocus()
+  expect(screen.getByLabelText('Título (opcional)')).toHaveValue(EJEMPLO.titulo)
+  expect(llamadas.some((l) => l.metodo === 'POST')).toBe(false)
+
+  // Se clasifica solo cuando el usuario lo pide.
+  fireEvent.click(screen.getByRole('button', { name: 'Clasificar' }))
   expect(await screen.findByRole('heading', { name: 'Redes ligeras' })).toBeInTheDocument()
   expect(llamadas.find((l) => l.metodo === 'POST')?.cuerpo).toEqual({
     texto: EJEMPLO.texto,
