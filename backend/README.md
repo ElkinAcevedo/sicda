@@ -77,9 +77,9 @@ Los umbrales de «requiere revisión» **no** se configuran aquí: se calibraron
 | GET | `/api/v1/categorias` | ⏳ Pendiente |
 | POST | `/api/v1/clasificaciones/archivo` | ✅ Implementado |
 | POST | `/api/v1/clasificaciones/texto` | ✅ Implementado |
-| GET | `/api/v1/clasificaciones` | ⏳ Pendiente |
-| GET | `/api/v1/clasificaciones/{id}` | ⏳ Pendiente |
-| POST | `/api/v1/clasificaciones/{id}/correccion` | ⏳ Pendiente |
+| GET | `/api/v1/clasificaciones` | ✅ Implementado |
+| GET | `/api/v1/clasificaciones/{id}` | ✅ Implementado |
+| POST | `/api/v1/clasificaciones/{id}/correccion` | ✅ Implementado |
 | GET | `/api/v1/modelos` | ⏳ Pendiente |
 | GET | `/api/v1/modelos/{id}/metricas` | ⏳ Pendiente |
 
@@ -112,6 +112,32 @@ Errores, con el formato `{"error": {"codigo", "mensaje"}}`: `ENTRADA_INVALIDA` 4
 `ARCHIVO_DANADO` 422, `MODELO_NO_DISPONIBLE` 503.
 
 Con el SVM plano, cada clasificación tarda unos 200 ms en CPU (RNF-01 pide menos de 2 s).
+
+## Historial y correcciones
+
+No necesitan el modelo: siguen funcionando aunque la API haya arrancado sin él.
+
+- `GET /clasificaciones`: de la más reciente a la más antigua, con `pagina` (desde 1) y
+  `tamano` (1 a 100, por defecto 20). Filtros: `dominio` (nombre exacto),
+  `desde` y `hasta` (AAAA-MM-DD o fecha y hora, en UTC; `hasta` sin hora incluye el día
+  completo), `requiere_revision` y `busqueda` (en el título o el nombre del archivo). Responde
+  `{elementos, total, pagina, tamano, paginas}`.
+- `GET /clasificaciones/{id}`: la respuesta de la clasificación más el texto extraído, el tipo
+  de documento y sus palabras clave.
+- `POST /clasificaciones/{id}/correccion` con `{dominio_correcto, area_correcta?, comentario?}`:
+  guarda la categoría correcta (una nueva reemplaza a la anterior) sin cambiar la predicción
+  original. El dominio y el área se validan contra `categorias.json`: el área debe pertenecer al
+  dominio.
+
+```bash
+curl 'localhost:8000/api/v1/clasificaciones?requiere_revision=true&desde=2026-11-01'
+curl -X POST localhost:8000/api/v1/clasificaciones/1/correccion \
+  -H 'Content-Type: application/json' \
+  -d '{"dominio_correcto": "Medical Sciences", "area_correcta": "Depression"}'
+```
+
+Los mensajes de error de validación (400) salen en español, por ejemplo
+`"Entrada inválida. tamano: debe ser menor o igual que 100"`.
 
 ## Extracción de texto (`app/extraccion/`)
 
