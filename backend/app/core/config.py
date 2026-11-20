@@ -12,11 +12,12 @@ class Settings(BaseSettings):
 
     entorno: str = "desarrollo"
     url_base_datos: str = "sqlite:///./clasificador.db"
+    # Carpeta con `activo.json` y los artefactos. Los umbrales de «requiere revisión» se
+    # calibraron en validación y vienen en `activo.json`, no en la configuración.
     ruta_modelos: Path = Path("../models")
+    ruta_categorias: Path = Path("../data/processed/categorias.json")
     tamano_maximo_archivo_mb: int = 10
     minimo_terminos: int = 20
-    umbral_confianza_dominio: float = 0.60
-    umbral_confianza_conjunta: float = 0.40
     origenes_cors: list[str] = ["http://localhost:5173"]
 
 
