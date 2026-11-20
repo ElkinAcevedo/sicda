@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Modo oscuro con la clase `dark` en <html> (ver useTema en src/lib/hooks.ts). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Inter va dentro del paquete (@fontsource-variable/inter): sin peticiones a Google. */
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
