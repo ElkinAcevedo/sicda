@@ -7,7 +7,7 @@
 | `ARCHIVO_MUY_GRANDE` | 413 |
 | `FORMATO_NO_SOPORTADO` | 415 |
 | `TEXTO_INSUFICIENTE`, `ARCHIVO_DANADO` | 422 |
-| `MODELO_NO_DISPONIBLE` | 503 |
+| `MODELO_NO_DISPONIBLE`, `CATEGORIAS_NO_DISPONIBLES` | 503 |
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from app.clasificacion.registro import SinPredicciones
 from app.db.repositorios import NoEncontrado
 from app.extraccion import ErrorExtraccion
 
@@ -44,6 +45,13 @@ class ModeloNoDisponible(ErrorApi):
     codigo = "MODELO_NO_DISPONIBLE"
 
 
+class CategoriasNoDisponibles(ErrorApi):
+    """No se pudo leer `categorias.json` (código propio, como `ARCHIVO_DANADO`)."""
+
+    codigo_http = 503
+    codigo = "CATEGORIAS_NO_DISPONIBLES"
+
+
 def respuesta_error(codigo_http: int, codigo: str, mensaje: str) -> JSONResponse:
     contenido = RespuestaError(error=DetalleError(codigo=codigo, mensaje=mensaje))
     return JSONResponse(status_code=codigo_http, content=contenido.model_dump())
@@ -63,6 +71,7 @@ MENSAJES_VALIDACION = {
     "date_from_datetime_parsing": "debe ser una fecha AAAA-MM-DD o una fecha y hora",
     "datetime_from_date_parsing": "debe ser una fecha AAAA-MM-DD o una fecha y hora",
     "json_invalid": "el JSON está mal formado",
+    "literal_error": "debe ser {expected}",
     "model_attributes_type": "debe ser un objeto JSON",
     "dict_type": "debe ser un objeto JSON",
 }
@@ -78,6 +87,8 @@ def _mensaje_validacion(error: RequestValidationError) -> str:
     for problema in error.errors():
         tipo = problema.get("type", "")
         contexto = problema.get("ctx", {})
+        if tipo == "literal_error":  # Pydantic escribe «'a' or 'b'»
+            contexto = {"expected": str(contexto.get("expected", "")).replace(" or ", " o ")}
         if tipo == "string_too_short" and contexto.get("min_length") == 1:
             mensaje = "no puede estar vacío"
         elif tipo in MENSAJES_VALIDACION:
@@ -102,7 +113,8 @@ def registrar_manejadores(aplicacion: FastAPI) -> None:
         return respuesta_error(error.codigo_http, error.codigo, error.mensaje)
 
     @aplicacion.exception_handler(NoEncontrado)
-    async def _no_encontrado(_request: Request, error: NoEncontrado) -> JSONResponse:
+    @aplicacion.exception_handler(SinPredicciones)
+    async def _no_encontrado(_request: Request, error: LookupError) -> JSONResponse:
         return respuesta_error(404, "NO_ENCONTRADO", str(error))
 
     @aplicacion.exception_handler(RequestValidationError)

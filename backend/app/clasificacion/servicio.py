@@ -16,16 +16,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from app.clasificacion import registro
 from app.clasificacion.catalogo import Catalogo
 from clasificador_ml.artefactos import cargar_activo
 
 logger = logging.getLogger(__name__)
-
-NOMBRES_ALGORITMO = {
-    "linear_svc": "TF-IDF + SVM lineal",
-    "complement_nb": "TF-IDF + Complement Naive Bayes",
-    "distilbert": "DistilBERT",
-}
 
 TEXTO_CALENTAMIENTO = (
     "Convolutional neural networks are trained on large image datasets to recognize objects."
@@ -112,7 +107,7 @@ class ServicioClasificacion:
     @property
     def nombre(self) -> str:
         """Nombre legible, por ejemplo «TF-IDF + SVM lineal (plano)»."""
-        return f"{NOMBRES_ALGORITMO.get(self.algoritmo, self.algoritmo)} ({self.tipo})"
+        return registro.nombre_modelo(self.algoritmo, self.tipo)
 
     @property
     def ruta_artefacto(self) -> str:
@@ -121,21 +116,12 @@ class ServicioClasificacion:
     @property
     def hiperparametros(self) -> dict[str, Any]:
         """Mejores hiperparámetros de cada submodelo (de `metadatos.json`)."""
-        submodelos = self.metadatos.get("tipos", {}).get(self.tipo, {}).get("submodelos", {})
-        return {
-            nombre: datos.get("mejores_parametros", {}) for nombre, datos in submodelos.items()
-        } or dict(self.metadatos.get("configuracion", {}))
+        return registro.hiperparametros(self.metadatos, self.tipo)
 
     @property
     def metricas(self) -> dict[str, Any]:
-        """Métricas de validación y de prueba, más los umbrales con que se publicó."""
-        tipo = self.metadatos.get("tipos", {}).get(self.tipo, {})
-        validacion = tipo.get("metricas_validacion") or self.metadatos.get("metricas_validacion")
-        return {
-            "validacion": validacion,
-            "prueba": self.info.get("metricas_prueba"),
-            "umbrales": self.info.get("umbrales", {}),
-        }
+        """Lo que se guarda en `modelo.metricas`, igual que para los demás modelos."""
+        return registro.metricas_guardadas(self.metadatos, self.tipo, self.info)
 
     @property
     def entrenado_en(self) -> datetime | None:
