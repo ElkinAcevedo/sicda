@@ -2,3 +2,13 @@
 
 Usa el preprocesamiento compartido de `clasificador_ml` (sección 6 del documento de diseño).
 """
+
+from app.clasificacion.servicio import (
+    Alternativa,
+    Nivel,
+    Prediccion,
+    ServicioClasificacion,
+    cargar_servicio,
+)
+
+__all__ = ["Alternativa", "Nivel", "Prediccion", "ServicioClasificacion", "cargar_servicio"]

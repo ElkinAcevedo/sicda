@@ -20,6 +20,7 @@ def test_documentacion_openapi_disponible():
 def test_al_iniciar_crea_las_tablas(monkeypatch):
     llamadas = []
     monkeypatch.setattr("app.main.crear_tablas", lambda: llamadas.append(True))
+    monkeypatch.setattr("app.main.cargar_servicio", lambda *_: None)
     with TestClient(app):
         pass
     assert llamadas == [True]

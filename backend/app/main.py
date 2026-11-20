@@ -11,15 +11,28 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
+from app.api.dependencias import registrar_modelo_activo
+from app.api.errores import registrar_manejadores
 from app.api.v1.router import api_router
+from app.clasificacion import cargar_servicio
 from app.core.config import settings
-from app.db.sesion import crear_tablas
+from app.db.sesion import SesionLocal, crear_tablas
 
 
 @asynccontextmanager
-async def ciclo_de_vida(_aplicacion: FastAPI) -> AsyncIterator[None]:
-    """Al iniciar: crea las tablas que falten en la base de datos."""
+async def ciclo_de_vida(aplicacion: FastAPI) -> AsyncIterator[None]:
+    """Al iniciar: crea las tablas que falten y carga el modelo activo una sola vez.
+
+    Si el modelo no se puede cargar, la API arranca igual y los endpoints de clasificación
+    responden `503 MODELO_NO_DISPONIBLE`.
+    """
     crear_tablas()
+    servicio = cargar_servicio(settings.ruta_modelos, settings.ruta_categorias)
+    if servicio is not None:
+        with SesionLocal() as sesion:
+            registrar_modelo_activo(sesion, servicio)
+            sesion.commit()
+    aplicacion.state.servicio = servicio
     yield
 
 
@@ -39,6 +52,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    registrar_manejadores(aplicacion)
     aplicacion.include_router(api_router, prefix="/api/v1")
     return aplicacion
 
