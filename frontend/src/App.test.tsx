@@ -19,7 +19,7 @@ test('indica si la API está activa y qué modelo tiene', async () => {
   })
   renderizarEn('/')
   expect(await screen.findByText('API: activa')).toBeInTheDocument()
-  expect(screen.getByText('Modelo: SVM v1')).toBeInTheDocument()
+  expect(screen.getByText('SVM v1')).toBeInTheDocument()
 })
 
 test('avisa cuando la API no responde', async () => {
@@ -31,10 +31,13 @@ test('avisa cuando la API no responde', async () => {
 test('el modo oscuro se activa y se recuerda', () => {
   vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('sin API'))
   renderizarEn('/')
-  fireEvent.click(screen.getByRole('button', { name: /modo oscuro/i }))
+  const interruptor = screen.getByRole('switch', { name: 'Modo oscuro' })
+  expect(interruptor).toHaveAttribute('aria-checked', 'false')
+  fireEvent.click(interruptor)
+  expect(interruptor).toHaveAttribute('aria-checked', 'true')
   expect(document.documentElement).toHaveClass('dark')
   expect(localStorage.getItem('sicda-tema')).toBe('oscuro')
-  fireEvent.click(screen.getByRole('button', { name: /modo claro/i }))
+  fireEvent.click(interruptor)
   expect(document.documentElement).not.toHaveClass('dark')
 })
 
