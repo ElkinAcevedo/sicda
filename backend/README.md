@@ -40,6 +40,7 @@ Todas las variables usan el prefijo `CLASIFICADOR_` y se leen del archivo `.env`
 | `CLASIFICADOR_URL_BASE_DATOS` | `sqlite:///./clasificador.db` | Conexión a la base de datos. |
 | `CLASIFICADOR_RUTA_MODELOS` | `../models` | Carpeta con `activo.json` y los modelos entrenados. |
 | `CLASIFICADOR_RUTA_CATEGORIAS` | `../data/processed/categorias.json` | Nombres de los dominios y las áreas. |
+| `CLASIFICADOR_RUTA_DATOS` | `../data/processed` | `val.parquet` y `test.parquet`, para las métricas detalladas de DistilBERT. |
 | `CLASIFICADOR_TAMANO_MAXIMO_ARCHIVO_MB` | `10` | Tamaño máximo de archivo aceptado. |
 | `CLASIFICADOR_MINIMO_TERMINOS` | `20` | Términos mínimos del resumen para poder clasificarlo. |
 | `CLASIFICADOR_ORIGENES_CORS` | `["http://localhost:5173"]` | Orígenes permitidos (frontend). |
@@ -74,14 +75,14 @@ Los umbrales de «requiere revisión» **no** se configuran aquí: se calibraron
 | Método | Ruta | Estado |
 | --- | --- | --- |
 | GET | `/api/v1/salud` | ✅ Implementado |
-| GET | `/api/v1/categorias` | ⏳ Pendiente |
+| GET | `/api/v1/categorias` | ✅ Implementado |
 | POST | `/api/v1/clasificaciones/archivo` | ✅ Implementado |
 | POST | `/api/v1/clasificaciones/texto` | ✅ Implementado |
 | GET | `/api/v1/clasificaciones` | ✅ Implementado |
 | GET | `/api/v1/clasificaciones/{id}` | ✅ Implementado |
 | POST | `/api/v1/clasificaciones/{id}/correccion` | ✅ Implementado |
-| GET | `/api/v1/modelos` | ⏳ Pendiente |
-| GET | `/api/v1/modelos/{id}/metricas` | ⏳ Pendiente |
+| GET | `/api/v1/modelos` | ✅ Implementado |
+| GET | `/api/v1/modelos/{id}/metricas` | ✅ Implementado |
 
 Los contratos completos están en la sección 7 del documento de diseño.
 
@@ -136,6 +137,26 @@ curl -X POST localhost:8000/api/v1/clasificaciones/1/correccion \
   -d '{"dominio_correcto": "Medical Sciences", "area_correcta": "Depression"}'
 ```
 
+## Modelos y categorías (`app/clasificacion/registro.py`)
+
+Al iniciar, la API registra en la tabla `modelo` la versión más reciente de cada algoritmo de
+`models/` (y la activa, si es otra). De cada algoritmo se registra la variante del modelo
+activo o, si no es el activo, la de mayor F1-macro jerárquico en validación. Así quedan los tres
+modelos del diseño: NB, SVM y DistilBERT.
+
+- `GET /categorias`: los 7 dominios y sus 136 áreas, con los documentos de cada una.
+- `GET /modelos`: primero el activo. Cada uno trae F1 de dominio, de área y jerárquico, y la
+  accuracy jerárquica en validación (y en prueba si se evaluó), el tiempo por resumen, los
+  umbrales, los hiperparámetros y el resumen de cada variante (plana y jerárquica).
+- `GET /modelos/{id}/metricas?particion=validacion|prueba`: métricas completas por nivel,
+  precisión, recall, F1 y soporte de cada dominio y cada área, la matriz de confusión de
+  dominio, una matriz de áreas por dominio (con la columna `otro dominio`) y el porcentaje que
+  iría a revisión. Por defecto usa prueba si el modelo se evaluó en test (solo el elegido, en el
+  notebook 05); si no, validación. Se calcula a partir de las predicciones guardadas y se
+  recuerda en memoria (~60 ms la primera vez).
+
+`CATEGORIAS_NO_DISPONIBLES` (503) es un código propio: `categorias.json` no se pudo leer.
+
 Los mensajes de error de validación (400) salen en español, por ejemplo
 `"Entrada inválida. tamano: debe ser menor o igual que 100"`.
 
@@ -184,3 +205,7 @@ título y resumen completos en ~0,3 s.
 cd backend
 pytest --cov=app
 ```
+
+Las pruebas usan una base de datos en memoria y nunca la carpeta `models/` real
+(`tests/conftest.py`), salvo `tests/api/test_modelo_real.py`, que lee el modelo activo y se
+omite si no hay uno entrenado.
