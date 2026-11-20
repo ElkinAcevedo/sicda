@@ -38,12 +38,14 @@ Todas las variables usan el prefijo `CLASIFICADOR_` y se leen del archivo `.env`
 | Variable | Valor por defecto | Descripción |
 | --- | --- | --- |
 | `CLASIFICADOR_URL_BASE_DATOS` | `sqlite:///./clasificador.db` | Conexión a la base de datos. |
-| `CLASIFICADOR_RUTA_MODELOS` | `../models` | Carpeta con los modelos entrenados. |
+| `CLASIFICADOR_RUTA_MODELOS` | `../models` | Carpeta con `activo.json` y los modelos entrenados. |
+| `CLASIFICADOR_RUTA_CATEGORIAS` | `../data/processed/categorias.json` | Nombres de los dominios y las áreas. |
 | `CLASIFICADOR_TAMANO_MAXIMO_ARCHIVO_MB` | `10` | Tamaño máximo de archivo aceptado. |
 | `CLASIFICADOR_MINIMO_TERMINOS` | `20` | Términos mínimos del resumen para poder clasificarlo. |
-| `CLASIFICADOR_UMBRAL_CONFIANZA_DOMINIO` | `0.60` | Por debajo de este valor se marca «requiere revisión». |
-| `CLASIFICADOR_UMBRAL_CONFIANZA_CONJUNTA` | `0.40` | Umbral de la confianza dominio × área. |
 | `CLASIFICADOR_ORIGENES_CORS` | `["http://localhost:5173"]` | Orígenes permitidos (frontend). |
+
+Los umbrales de «requiere revisión» **no** se configuran aquí: se calibraron en validación
+(notebook 05) y vienen en `models/activo.json` junto con el modelo.
 
 ## Persistencia
 
@@ -73,8 +75,8 @@ Todas las variables usan el prefijo `CLASIFICADOR_` y se leen del archivo `.env`
 | --- | --- | --- |
 | GET | `/api/v1/salud` | ✅ Implementado |
 | GET | `/api/v1/categorias` | ⏳ Pendiente |
-| POST | `/api/v1/clasificaciones/archivo` | ⏳ Pendiente |
-| POST | `/api/v1/clasificaciones/texto` | ⏳ Pendiente |
+| POST | `/api/v1/clasificaciones/archivo` | ✅ Implementado |
+| POST | `/api/v1/clasificaciones/texto` | ✅ Implementado |
 | GET | `/api/v1/clasificaciones` | ⏳ Pendiente |
 | GET | `/api/v1/clasificaciones/{id}` | ⏳ Pendiente |
 | POST | `/api/v1/clasificaciones/{id}/correccion` | ⏳ Pendiente |
@@ -82,6 +84,34 @@ Todas las variables usan el prefijo `CLASIFICADOR_` y se leen del archivo `.env`
 | GET | `/api/v1/modelos/{id}/metricas` | ⏳ Pendiente |
 
 Los contratos completos están en la sección 7 del documento de diseño.
+
+## Clasificación (`app/clasificacion/`)
+
+Al iniciar, la API lee `models/activo.json` (lo publica el notebook 05), carga el `.joblib` que
+señala **una sola vez**, lo registra como modelo activo en la tabla `modelo` y hace una
+predicción de calentamiento para que spaCy ya esté cargado cuando llegue el primer usuario. Si
+el modelo no se puede cargar, la API arranca igual y los endpoints de clasificación responden
+`503 MODELO_NO_DISPONIBLE`. `GET /salud` indica qué modelo está cargado.
+
+Cada `POST /clasificaciones/*`:
+
+1. extrae el resumen (archivo o texto pegado);
+2. lo clasifica con el modelo activo: dominio, área, top 3 de alternativas por nivel,
+   confianza conjunta, «requiere revisión» y términos clave;
+3. guarda el documento (una sola vez por hash) y la clasificación, y responde `201`.
+
+```bash
+curl -X POST localhost:8000/api/v1/clasificaciones/texto \
+  -H 'Content-Type: application/json' \
+  -d '{"titulo": "A lightweight CNN", "texto": "Convolutional neural networks ..."}'
+curl -X POST localhost:8000/api/v1/clasificaciones/archivo -F archivo=@articulo.pdf
+```
+
+Errores, con el formato `{"error": {"codigo", "mensaje"}}`: `ENTRADA_INVALIDA` 400,
+`ARCHIVO_MUY_GRANDE` 413, `FORMATO_NO_SOPORTADO` 415, `TEXTO_INSUFICIENTE` y
+`ARCHIVO_DANADO` 422, `MODELO_NO_DISPONIBLE` 503.
+
+Con el SVM plano, cada clasificación tarda unos 200 ms en CPU (RNF-01 pide menos de 2 s).
 
 ## Extracción de texto (`app/extraccion/`)
 
