@@ -4,6 +4,7 @@ Ejecutar en desarrollo:
     uvicorn app.main:app --reload
 """
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -15,8 +16,11 @@ from app.api.dependencias import registrar_modelo_activo
 from app.api.errores import registrar_manejadores
 from app.api.v1.router import api_router
 from app.clasificacion import cargar_catalogo, cargar_servicio
+from app.clasificacion.registro import CalculadoraMetricas, sincronizar_modelos
 from app.core.config import settings
 from app.db.sesion import SesionLocal, crear_tablas
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -30,15 +34,32 @@ async def ciclo_de_vida(aplicacion: FastAPI) -> AsyncIterator[None]:
     """
     crear_tablas()
     servicio = cargar_servicio(settings.ruta_modelos, settings.ruta_categorias)
-    if servicio is not None:
-        with SesionLocal() as sesion:
-            registrar_modelo_activo(sesion, servicio)
-            sesion.commit()
-    aplicacion.state.servicio = servicio
-    aplicacion.state.catalogo = (
+    _registrar_modelos(servicio)
+    catalogo = (
         servicio.catalogo if servicio is not None else cargar_catalogo(settings.ruta_categorias)
     )
+    aplicacion.state.servicio = servicio
+    aplicacion.state.catalogo = catalogo
+    aplicacion.state.calculadora = (
+        CalculadoraMetricas(settings.ruta_modelos, settings.ruta_datos, catalogo)
+        if catalogo is not None
+        else None
+    )
     yield
+
+
+def _registrar_modelos(servicio) -> None:
+    """Registra en la tabla `modelo` los modelos de `models/` y deja activo el cargado."""
+    with SesionLocal() as sesion:
+        try:
+            info_activo = servicio.info if servicio is not None else None
+            sincronizar_modelos(sesion, settings.ruta_modelos, info_activo)
+            if servicio is not None:
+                registrar_modelo_activo(sesion, servicio)
+            sesion.commit()
+        except Exception:  # un metadatos.json roto no debe impedir que la API arranque
+            sesion.rollback()
+            logger.exception("No se pudieron registrar los modelos de %s", settings.ruta_modelos)
 
 
 def create_app() -> FastAPI:

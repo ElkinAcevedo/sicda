@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     # calibraron en validación y vienen en `activo.json`, no en la configuración.
     ruta_modelos: Path = Path("../models")
     ruta_categorias: Path = Path("../data/processed/categorias.json")
+    # Particiones val/test: solo para las métricas detalladas de DistilBERT, cuyas
+    # probabilidades no traen las etiquetas reales.
+    ruta_datos: Path = Path("../data/processed")
     tamano_maximo_archivo_mb: int = 10
     minimo_terminos: int = 20
     origenes_cors: list[str] = ["http://localhost:5173"]

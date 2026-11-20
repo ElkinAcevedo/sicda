@@ -44,3 +44,20 @@ def test_el_modelo_activo_clasifica_ejemplos_evidentes(servicio, texto, dominio)
     assert prediccion.area.alternativas[0].nombre == prediccion.area.nombre
     assert 0 <= prediccion.confianza_conjunta <= prediccion.dominio.confianza <= 1
     assert prediccion.terminos_clave
+
+
+def test_metricas_del_modelo_activo_coinciden_con_activo_json(servicio):
+    from app.clasificacion.registro import CalculadoraMetricas, descubrir_modelos
+    from app.db.modelos import Modelo
+
+    disponible = next(m for m in descubrir_modelos(MODELOS, servicio.info) if m.activo)
+    campos = disponible.campos()
+    modelo = Modelo(
+        algoritmo=campos["algoritmo"], version=campos["version"], metricas=campos["metricas"]
+    )
+    detalle = CalculadoraMetricas(MODELOS, DATOS_PROCESADOS, servicio.catalogo).calcular(modelo)
+
+    esperado = servicio.info["metricas_prueba"]
+    if detalle.particion == "prueba" and esperado:
+        assert detalle.metricas["area"]["f1_macro"] == pytest.approx(esperado["area"]["f1_macro"])
+    assert len(detalle.por_clase["area"]) == 136
