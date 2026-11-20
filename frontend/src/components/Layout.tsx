@@ -52,17 +52,22 @@ export function Layout() {
       {/* La barra es oscura en los dos modos: separa la navegación del contenido. */}
       <aside className="relative z-10 flex flex-wrap items-center gap-x-3 gap-y-2 bg-gradient-to-b from-slate-900 via-slate-900 to-indigo-950 px-3 py-3 text-slate-300 shadow-lg md:sticky md:top-0 md:h-screen md:w-64 md:flex-col md:flex-nowrap md:items-stretch md:gap-0 md:px-4 md:py-6">
         {/* Marca */}
-        <div className="flex items-center gap-3 md:mb-8 md:px-2">
+        {/* En escritorio, el logo va sobre el título; en celular, al lado (la barra es horizontal). */}
+        <div className="flex items-center gap-3 md:mb-6 md:flex-col md:gap-3 md:border-b md:border-white/10 md:px-2 md:pb-6 md:text-center">
           <img
             src={logo}
             alt=""
-            width={56}
-            height={56}
-            className="size-10 shrink-0 rounded-xl shadow-lg shadow-black/30 md:size-14 md:rounded-2xl"
+            width={72}
+            height={72}
+            className="size-10 shrink-0 rounded-xl shadow-lg shadow-black/30 md:size-18 md:rounded-2xl"
           />
           <div className="leading-tight">
-            <p className="text-base font-bold tracking-wide text-white md:text-lg">SICDA</p>
-            <p className="hidden text-xs text-slate-400 md:block">Clasificación de documentos académicos</p>
+            <p className="text-base font-bold tracking-wide text-white md:text-xl md:tracking-widest">
+              SICDA
+            </p>
+            <p className="hidden text-xs text-slate-400 md:mt-1 md:block">
+              Clasificación de documentos académicos
+            </p>
           </div>
         </div>
 
