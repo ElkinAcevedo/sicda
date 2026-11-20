@@ -1,10 +1,10 @@
 import { type ComponentType, type SVGProps, useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { api } from '@/api/cliente'
+import logo from '@/assets/logo-sicda.svg'
 import {
   IconoClasificar,
   IconoHistorial,
-  IconoLogo,
   IconoLuna,
   IconoMetricas,
   IconoSol,
@@ -53,9 +53,13 @@ export function Layout() {
       <aside className="relative z-10 flex flex-wrap items-center gap-x-3 gap-y-2 bg-gradient-to-b from-slate-900 via-slate-900 to-indigo-950 px-3 py-3 text-slate-300 shadow-lg md:sticky md:top-0 md:h-screen md:w-64 md:flex-col md:flex-nowrap md:items-stretch md:gap-0 md:px-4 md:py-6">
         {/* Marca */}
         <div className="flex items-center gap-3 md:mb-8 md:px-2">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-violet-600 text-white shadow-md ring-1 shadow-indigo-900/50 ring-white/20 md:size-10">
-            <IconoLogo className="size-5 md:size-6" />
-          </span>
+          <img
+            src={logo}
+            alt=""
+            width={56}
+            height={56}
+            className="size-10 shrink-0 rounded-xl shadow-lg shadow-black/30 md:size-14 md:rounded-2xl"
+          />
           <div className="leading-tight">
             <p className="text-base font-bold tracking-wide text-white md:text-lg">SICDA</p>
             <p className="hidden text-xs text-slate-400 md:block">Clasificación de documentos académicos</p>
