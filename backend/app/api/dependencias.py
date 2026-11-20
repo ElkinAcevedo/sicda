@@ -5,8 +5,9 @@ from __future__ import annotations
 from fastapi import Request
 from sqlalchemy.orm import Session
 
-from app.api.errores import ModeloNoDisponible
+from app.api.errores import CategoriasNoDisponibles, ModeloNoDisponible
 from app.clasificacion import Catalogo, ServicioClasificacion
+from app.clasificacion.registro import CalculadoraMetricas
 from app.db import repositorios as repo
 from app.db.modelos import Modelo
 
@@ -25,6 +26,24 @@ def obtener_servicio(request: Request) -> ServicioClasificacion:
 def obtener_catalogo(request: Request) -> Catalogo | None:
     """Catálogo de dominios y áreas; `None` si `categorias.json` no se pudo cargar."""
     return getattr(request.app.state, "catalogo", None)
+
+
+def exigir_catalogo(request: Request) -> Catalogo:
+    catalogo = obtener_catalogo(request)
+    if catalogo is None:
+        raise CategoriasNoDisponibles(
+            "No se pudo leer el catálogo de categorías (categorias.json). Revise "
+            "CLASIFICADOR_RUTA_CATEGORIAS y reinicie la API."
+        )
+    return catalogo
+
+
+def obtener_calculadora(request: Request) -> CalculadoraMetricas:
+    calculadora = getattr(request.app.state, "calculadora", None)
+    if calculadora is None:
+        exigir_catalogo(request)  # la calculadora solo falta si falta el catálogo
+        raise CategoriasNoDisponibles("Las métricas detalladas no están disponibles.")
+    return calculadora
 
 
 def registrar_modelo_activo(sesion: Session, servicio: ServicioClasificacion) -> Modelo:
