@@ -14,7 +14,7 @@ from app import __version__
 from app.api.dependencias import registrar_modelo_activo
 from app.api.errores import registrar_manejadores
 from app.api.v1.router import api_router
-from app.clasificacion import cargar_servicio
+from app.clasificacion import cargar_catalogo, cargar_servicio
 from app.core.config import settings
 from app.db.sesion import SesionLocal, crear_tablas
 
@@ -22,6 +22,8 @@ from app.db.sesion import SesionLocal, crear_tablas
 @asynccontextmanager
 async def ciclo_de_vida(aplicacion: FastAPI) -> AsyncIterator[None]:
     """Al iniciar: crea las tablas que falten y carga el modelo activo una sola vez.
+
+    El catálogo de categorías se carga aunque el modelo falle: lo usan las correcciones.
 
     Si el modelo no se puede cargar, la API arranca igual y los endpoints de clasificación
     responden `503 MODELO_NO_DISPONIBLE`.
@@ -33,6 +35,9 @@ async def ciclo_de_vida(aplicacion: FastAPI) -> AsyncIterator[None]:
             registrar_modelo_activo(sesion, servicio)
             sesion.commit()
     aplicacion.state.servicio = servicio
+    aplicacion.state.catalogo = (
+        servicio.catalogo if servicio is not None else cargar_catalogo(settings.ruta_categorias)
+    )
     yield
 
 

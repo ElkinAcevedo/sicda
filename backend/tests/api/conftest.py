@@ -106,6 +106,7 @@ def aplicacion(fabrica_sesiones):
 
     app.dependency_overrides[obtener_sesion] = _sesion
     app.state.servicio = crear_servicio()
+    app.state.catalogo = app.state.servicio.catalogo
     return app
 
 
