@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from app.clasificacion.catalogo import Catalogo
 from clasificador_ml.artefactos import cargar_activo
 
 logger = logging.getLogger(__name__)
@@ -76,8 +78,7 @@ class ServicioClasificacion:
         self.modelo = modelo
         self.info = info
         self.metadatos = metadatos or {}
-        self._dominios = {d["id"]: d["nombre"] for d in categorias["dominios"]}
-        self._areas = {a["id"]: a["nombre"] for d in categorias["dominios"] for a in d["areas"]}
+        self.catalogo = Catalogo(categorias)
 
     @classmethod
     def desde_directorio(
@@ -147,18 +148,15 @@ class ServicioClasificacion:
         """Clasifica un resumen. Los umbrales de revisión son los de `activo.json`."""
         resultado = self.modelo.predecir_detallado([texto])[0]
         return Prediccion(
-            dominio=self._nivel(resultado["dominio"], self._dominios),
-            area=self._nivel(resultado["area"], self._areas),
+            dominio=self._nivel(resultado["dominio"], self.catalogo.nombre_dominio),
+            area=self._nivel(resultado["area"], self.catalogo.nombre_area),
             confianza_conjunta=float(resultado["confianza_conjunta"]),
             requiere_revision=bool(resultado["requiere_revision"]),
             terminos_clave=list(resultado.get("terminos_clave", [])),
         )
 
     @staticmethod
-    def _nivel(datos: dict[str, Any], nombres: dict[int, str]) -> Nivel:
-        def nombre(identificador: int) -> str:
-            return nombres.get(int(identificador), str(identificador))
-
+    def _nivel(datos: dict[str, Any], nombre: Callable[[int], str]) -> Nivel:
         return Nivel(
             id=int(datos["id"]),
             nombre=nombre(datos["id"]),

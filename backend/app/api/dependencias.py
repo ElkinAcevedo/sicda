@@ -6,7 +6,7 @@ from fastapi import Request
 from sqlalchemy.orm import Session
 
 from app.api.errores import ModeloNoDisponible
-from app.clasificacion import ServicioClasificacion
+from app.clasificacion import Catalogo, ServicioClasificacion
 from app.db import repositorios as repo
 from app.db.modelos import Modelo
 
@@ -20,6 +20,11 @@ def obtener_servicio(request: Request) -> ServicioClasificacion:
             "y reinicie la API."
         )
     return servicio
+
+
+def obtener_catalogo(request: Request) -> Catalogo | None:
+    """Catálogo de dominios y áreas; `None` si `categorias.json` no se pudo cargar."""
+    return getattr(request.app.state, "catalogo", None)
 
 
 def registrar_modelo_activo(sesion: Session, servicio: ServicioClasificacion) -> Modelo:
