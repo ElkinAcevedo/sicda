@@ -18,6 +18,7 @@ El paquete se instala en modo editable y lo importan **tanto los scripts de entr
 | `entrenamiento.py` | CLI que entrena NB y SVM y guarda los artefactos versionados. | III |
 | `seleccion.py` | Regla de elección del modelo y calibración de los umbrales de revisión. | III |
 | `artefactos.py` | Leer versiones de `models/` y publicar el modelo activo. | III |
+| `externos.py` | Descargar artículos reales de arXiv y PubMed y evaluar el modelo activo con ellos. | V |
 
 ## Preparar el dataset (Fase I)
 
@@ -93,6 +94,33 @@ mayor `P(área | dominio)`; la confianza conjunta es el producto. El plano (y Di
 DistilBERT se entrena en Google Colab con `notebooks/04-distilbert-colab.ipynb`; el notebook 05
 compara todos los modelos, calibra los umbrales, evalúa **una sola vez** en test y escribe
 `models/activo.json`.
+
+## Evaluar con artículos externos (Fase V)
+
+El test viene del mismo dataset con que se entrenó; el diseño (sección 6.6) pide medir también
+con **30 artículos reales** que el modelo nunca vio. Se usan artículos de arXiv y PubMed
+publicados desde 2020, 6 por dominio en 5 dominios. Ingeniería Civil e Ingeniería Mecánica casi
+no tienen artículos en esas fuentes y quedan fuera.
+
+```bash
+python -m clasificador_ml.externos descargar   # ~1,5 min: 2 candidatos por área → data/external/articulos.xlsx
+# … revisión humana del Excel …
+python -m clasificador_ml.externos evaluar     # ~3 s: evaluacion.xlsx y metricas.json
+```
+
+**Revisión del Excel.** De cada área, el primer candidato tiene `incluir = si` y el segundo
+`incluir = reserva`. Para cada artículo con `si`, lee el título y el resumen (el enlace está en
+`url`) y decide si de verdad es de ese dominio y esa área:
+
+- Si lo es, pon `revisado = si`.
+- Si es de otra área, corrige `dominio`/`area`. Los nombres deben ser exactamente los de
+  `categorias.json`; `evaluar` avisa si alguno no existe.
+- Si no sirve (biografía, editorial, tema ajeno), pon `incluir = no` y `incluir = si` en la
+  reserva de esa área, y revísala.
+
+`descargar` no sobrescribe un Excel ya existente, para no perder la revisión (`--sobrescribir`
+lo fuerza). Las consultas de cada área están en `BUSQUEDAS`. Con 30 artículos el F1-macro de
+área es poco estable (casi un artículo por clase), así que la cifra principal es la de dominio.
 
 ## Configuraciones
 
