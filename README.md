@@ -120,7 +120,9 @@ Cada carpeta principal tiene su propio `README.md` con los detalles.
 
 ## Inicio rápido
 
-> El proyecto está en su fase inicial. Por ahora la API solo expone `GET /api/v1/salud` y el dashboard muestra la navegación entre vistas.
+> La API y el dashboard están completos. El modelo activo es **TF-IDF + SVM lineal (plano)**, con F1-macro de 0,91 en dominio y 0,79 en área sobre el conjunto de prueba ([ADR 0003](docs/decisiones/0003-seleccion-modelo.md)).
+>
+> Para clasificar se necesitan los modelos entrenados en `models/` y las particiones en `data/processed/`, que no se versionan. Antes de levantar la API, sigue [`data/README.md`](data/README.md) y [`ml/README.md`](ml/README.md) (generar los datos, entrenar y publicar `models/activo.json`). Sin un modelo activo la API arranca, pero `/clasificaciones` responde `503 MODELO_NO_DISPONIBLE`.
 
 ### Requisitos
 
@@ -182,6 +184,10 @@ docker compose up --build
 - Dashboard: <http://localhost:8080>
 - API: <http://localhost:8000/docs>
 
+`models/` y `data/processed/` se montan como volúmenes de solo lectura, así que deben existir antes (ver arriba). La base SQLite vive en el volumen `datos_api` y conserva el historial entre reinicios; `docker compose down -v` la borra.
+
+La imagen de la API instala las versiones de `backend/restricciones-docker.txt`: scikit-learn y sus dependencias deben ser las mismas con las que se entrenaron los `.joblib`. Si reentrenas con otras versiones, actualiza ese archivo.
+
 ### 4. Pruebas y calidad de código
 
 ```bash
@@ -203,9 +209,9 @@ El dataset **no se incluye en el repositorio** por su tamaño. Las instrucciones
 | --- | --- | --- |
 | I. Revisión y preparación de los datos | 1–2 | ✅ Dataset limpio y particionado ([ADR 0002](docs/decisiones/0002-etiquetas-wos.md)) |
 | II. Extracción y procesamiento del texto | 2–4 | ✅ Extracción PDF/DOCX/TXT y preprocesamiento con pruebas |
-| III. Entrenamiento y evaluación de modelos | 4–7 | ⏳ Pendiente |
-| IV. Desarrollo e integración de la aplicación | 6–9 | 🚧 Estructura base y entorno listos |
-| V. Pruebas, ajustes y documentación | 10–12 | ⏳ Pendiente |
+| III. Entrenamiento y evaluación de modelos | 4–7 | ✅ Naive Bayes, SVM y DistilBERT comparados; modelo activo SVM plano ([ADR 0003](docs/decisiones/0003-seleccion-modelo.md)) |
+| IV. Desarrollo e integración de la aplicación | 6–9 | ✅ API REST, persistencia, dashboard con 4 vistas y `docker compose up` verificado |
+| V. Pruebas, ajustes y documentación | 10–12 | ⏳ Pendiente: e2e, rendimiento, 30 artículos externos, usabilidad (SUS) e informe final |
 
 ## Cómo contribuir
 
