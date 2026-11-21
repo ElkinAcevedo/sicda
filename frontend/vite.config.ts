@@ -12,7 +12,8 @@ export default defineConfig({
   server: {
     port: 5173,
     // En desarrollo, /api se redirige a FastAPI: el frontend nunca escribe la URL del backend.
-    proxy: { '/api': 'http://localhost:8000' },
+    // Las pruebas e2e cambian el destino con VITE_API_PROXY para usar su propia API.
+    proxy: { '/api': process.env.VITE_API_PROXY ?? 'http://localhost:8000' },
   },
   test: {
     environment: 'jsdom',
