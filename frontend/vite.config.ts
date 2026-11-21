@@ -17,5 +17,14 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // `npm run test:cobertura`. Se mide todo src/, no solo lo que cargan las pruebas, y el
+    // CI falla por debajo del 70 % (RNF-07).
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/main.tsx', 'src/**/*.d.ts'],
+      reporter: ['text-summary', 'text'],
+      thresholds: { lines: 70, statements: 70, functions: 70, branches: 70 },
+    },
   },
 })
