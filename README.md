@@ -191,13 +191,13 @@ La imagen de la API instala las versiones de `backend/restricciones-docker.txt`:
 ### 4. Pruebas y calidad de código
 
 ```bash
-ruff check backend ml              # estilo de Python
-pytest ml/tests                    # paquete ML
-cd backend && pytest --cov=app     # API
-cd frontend && npm run lint && npm test
+ruff check backend ml                           # estilo de Python
+pytest ml/tests --cov=clasificador_ml           # paquete ML
+cd backend && pytest --cov=app                  # API
+cd frontend && npm run lint && npm run test:cobertura
 ```
 
-GitHub Actions ejecuta todo esto en cada *push* y *pull request*.
+GitHub Actions ejecuta todo esto en cada *push* y *pull request*, y falla si la cobertura de cualquiera de las tres partes baja del 70 %. Los resultados están en el [informe de pruebas](docs/pruebas.md).
 
 ## Dataset
 

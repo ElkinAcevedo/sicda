@@ -29,12 +29,13 @@ jobs:
       - name: Lint (ruff)
         run: ruff check backend ml
 
+      # Cobertura mínima del 70 % (RNF-07): el paso falla si baja de ahí.
       - name: Pruebas del paquete ML
-        run: pytest ml/tests
+        run: pytest ml/tests --cov=clasificador_ml --cov-report=term-missing --cov-fail-under=70
 
       - name: Pruebas del backend
         working-directory: backend
-        run: pytest --cov=app --cov-report=term-missing
+        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=70
 
   frontend:
     name: Frontend (lint + pruebas + build)
@@ -53,5 +54,5 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
-      - run: npm test
+      - run: npm run test:cobertura
       - run: npm run build
