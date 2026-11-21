@@ -1,0 +1,10 @@
+# Versiones fijas para la imagen de Docker.
+# Los modelos `.joblib` se guardan con pickle: scikit-learn y sus dependencias numéricas deben
+# ser las mismas con las que se entrenaron (.venv) o la API puede no cargar el modelo activo.
+# Si se reentrena con otras versiones, actualizar este archivo.
+scikit-learn==1.9.1
+numpy==2.5.4
+scipy==1.18.1
+joblib==1.6.0
+spacy==3.8.18
+nltk==3.10.4
