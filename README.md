@@ -195,9 +195,10 @@ ruff check backend ml                           # estilo de Python
 pytest ml/tests --cov=clasificador_ml           # paquete ML
 cd backend && pytest --cov=app                  # API
 cd frontend && npm run lint && npm run test:cobertura
+cd tests/e2e && npm test                         # extremo a extremo (ver tests/e2e/README.md)
 ```
 
-GitHub Actions ejecuta todo esto en cada *push* y *pull request*, y falla si la cobertura de cualquiera de las tres partes baja del 70 %. Los resultados están en el [informe de pruebas](docs/pruebas.md).
+GitHub Actions ejecuta todo esto en cada *push* y *pull request*, y falla si la cobertura de cualquiera de las tres partes baja del 70 % o si falla el flujo de extremo a extremo en Chromium o Firefox. Los resultados están en el [informe de pruebas](docs/pruebas.md).
 
 ## Dataset
 
@@ -211,7 +212,7 @@ El dataset **no se incluye en el repositorio** por su tamaño. Las instrucciones
 | II. Extracción y procesamiento del texto | 2–4 | ✅ Extracción PDF/DOCX/TXT y preprocesamiento con pruebas |
 | III. Entrenamiento y evaluación de modelos | 4–7 | ✅ Naive Bayes, SVM y DistilBERT comparados; modelo activo SVM plano ([ADR 0003](docs/decisiones/0003-seleccion-modelo.md)) |
 | IV. Desarrollo e integración de la aplicación | 6–9 | ✅ API REST, persistencia, dashboard con 4 vistas y `docker compose up` verificado |
-| V. Pruebas, ajustes y documentación | 10–12 | ⏳ Pendiente: e2e, rendimiento, 30 artículos externos, usabilidad (SUS) e informe final |
+| V. Pruebas, ajustes y documentación | 10–12 | 🚧 Cobertura y e2e listas ([informe](docs/pruebas.md)); faltan rendimiento, 30 artículos externos, usabilidad (SUS) e informe final |
 
 ## Cómo contribuir
 

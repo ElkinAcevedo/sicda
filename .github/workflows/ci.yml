@@ -27,7 +27,7 @@ jobs:
           .venv/bin/python -m nltk.downloader -q stopwords
 
       - name: Lint (ruff)
-        run: ruff check backend ml
+        run: ruff check backend ml tests
 
       # Cobertura mínima del 70 % (RNF-07): el paso falla si baja de ahí.
       - name: Pruebas del paquete ML
@@ -56,3 +56,46 @@ jobs:
       - run: npm run lint
       - run: npm run test:cobertura
       - run: npm run build
+
+  e2e:
+    name: Extremo a extremo (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Entorno de Python (API y entrenamiento del modelo diminuto)
+        run: |
+          uv venv --python 3.12
+          uv pip install -e ml -e backend
+          SPACY=$(.venv/bin/python -c "import spacy; a, b, *_ = spacy.__version__.split('.'); print(f'{a}.{b}.0')")
+          uv pip install "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-${SPACY}/en_core_web_sm-${SPACY}-py3-none-any.whl"
+          .venv/bin/python -m nltk.downloader -q stopwords
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            tests/e2e/package-lock.json
+
+      - name: Dependencias del dashboard y de Playwright
+        run: |
+          npm ci --prefix frontend
+          npm ci --prefix tests/e2e
+          cd tests/e2e && npx playwright install --with-deps chromium firefox
+
+      # Playwright entrena el modelo diminuto (preparar.py) y levanta la API y el dashboard.
+      - name: Pruebas en Chromium y Firefox
+        working-directory: tests/e2e
+        run: npx playwright test
+
+      - name: Informe de Playwright (si fallan)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-playwright
+          path: tests/e2e/playwright-report/
+          retention-days: 7
