@@ -8,7 +8,7 @@ Fase V; cada sección indica la fecha y el commit en que se midió.
 | Evaluación del modelo | F1-macro ≥ 0,85 (dominio) y ≥ 0,65 (área) | ✅ En test: 0,91 y 0,79 ([ADR 0003](decisiones/0003-seleccion-modelo.md)). ⏳ Faltan los 30 artículos externos |
 | Unitarias | 100 % aprobadas y cobertura ≥ 70 % | ✅ Ver [Cobertura](#cobertura) |
 | Integración (API) | Todos los contratos responden según lo especificado | ✅ `backend/tests/api/` |
-| Extremo a extremo | El flujo completo funciona en Chrome y Firefox | ⏳ |
+| Extremo a extremo | El flujo completo funciona en Chrome y Firefox | ✅ Ver [Extremo a extremo](#extremo-a-extremo) |
 | Rendimiento | p95 < 2 s para texto y < 5 s para PDF | ⏳ |
 | Usabilidad | Tasa de éxito ≥ 90 % y SUS ≥ 70 | ⏳ |
 
@@ -30,3 +30,20 @@ misma en local y en el CI.
 Las partes con menos cobertura (`ZonaArchivo.tsx`, arrastrar y soltar, y los entrypoints
 `python -m` de `datos.py` y `preprocesamiento.py`) las ejercitan las pruebas de extremo a
 extremo y la ejecución manual de los comandos.
+
+## Extremo a extremo
+
+Medida el 2026-11-21 con Playwright 1.65 (Chromium y Firefox 159): **6 de 6 pruebas
+aprobadas** (3 por navegador) en unos 15 s, estables en 4 ejecuciones seguidas. Corren en el CI
+en cada *pull request* (job «Extremo a extremo»).
+
+| Prueba | Chromium | Firefox |
+| --- | --- | --- |
+| Cargar un PDF → ver el resultado → encontrarlo en el historial → corregirlo | ✅ | ✅ |
+| Clasificar un texto pegado | ✅ | ✅ |
+| Mostrar el error `TEXTO_INSUFICIENTE` de la API | ✅ | ✅ |
+
+Las pruebas usan la API y el dashboard reales con un SVM diminuto entrenado con el código del
+proyecto sobre datos sintéticos, porque en el CI no hay modelos ni datos. Comprueban que todas
+las piezas funcionen juntas, no la calidad del modelo; esa se mide en la evaluación del modelo.
+Detalles en [`tests/e2e/README.md`](../tests/e2e/README.md).

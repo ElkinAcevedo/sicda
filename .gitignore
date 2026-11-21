@@ -26,6 +26,7 @@ npm-debug.log*
 .vite/
 playwright-report/
 test-results/
+tests/e2e/.recursos/
 
 # ---------- Variables de entorno ----------
 .env
