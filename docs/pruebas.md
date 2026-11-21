@@ -5,7 +5,7 @@ Fase V; cada sección indica la fecha y el commit en que se midió.
 
 | Tipo | Criterio de aceptación | Estado |
 | --- | --- | --- |
-| Evaluación del modelo | F1-macro ≥ 0,85 (dominio) y ≥ 0,65 (área) | ✅ En test: 0,91 y 0,79 ([ADR 0003](decisiones/0003-seleccion-modelo.md)). ⏳ Faltan los 30 artículos externos |
+| Evaluación del modelo | F1-macro ≥ 0,85 (dominio) y ≥ 0,65 (área) | ✅ En test: 0,91 y 0,79 ([ADR 0003](decisiones/0003-seleccion-modelo.md)). 🚧 30 artículos externos descargados; falta la revisión humana ([cómo](../ml/README.md#evaluar-con-artículos-externos-fase-v)) |
 | Unitarias | 100 % aprobadas y cobertura ≥ 70 % | ✅ Ver [Cobertura](#cobertura) |
 | Integración (API) | Todos los contratos responden según lo especificado | ✅ `backend/tests/api/` |
 | Extremo a extremo | El flujo completo funciona en Chrome y Firefox | ✅ Ver [Extremo a extremo](#extremo-a-extremo) |
