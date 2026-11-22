@@ -37,6 +37,10 @@ jobs:
         working-directory: backend
         run: pytest --cov=app --cov-report=term-missing --cov-fail-under=70
 
+      # Solo el script; la medición real necesita models/ y data/ (tests/rendimiento/README.md).
+      - name: Pruebas del script de rendimiento
+        run: pytest tests/rendimiento
+
   frontend:
     name: Frontend (lint + pruebas + build)
     runs-on: ubuntu-latest
