@@ -9,7 +9,7 @@ Fase V; cada sección indica la fecha y el commit en que se midió.
 | Unitarias | 100 % aprobadas y cobertura ≥ 70 % | ✅ Ver [Cobertura](#cobertura) |
 | Integración (API) | Todos los contratos responden según lo especificado | ✅ `backend/tests/api/` |
 | Extremo a extremo | El flujo completo funciona en Chrome y Firefox | ✅ Ver [Extremo a extremo](#extremo-a-extremo) |
-| Rendimiento | p95 < 2 s para texto y < 5 s para PDF | ⏳ |
+| Rendimiento | p95 < 2 s para texto y < 5 s para PDF | ✅ p95 de 0,23 s en ambos (ver [Rendimiento](#rendimiento)) |
 | Usabilidad | Tasa de éxito ≥ 90 % y SUS ≥ 70 | ⏳ |
 
 ## Cobertura
@@ -95,3 +95,39 @@ Las pruebas usan la API y el dashboard reales con un SVM diminuto entrenado con 
 proyecto sobre datos sintéticos, porque en el CI no hay modelos ni datos. Comprueban que todas
 las piezas funcionen juntas, no la calidad del modelo; esa se mide en la evaluación del modelo.
 Detalles en [`tests/e2e/README.md`](../tests/e2e/README.md).
+
+## Rendimiento
+
+Medido el 2026-11-21 con el modelo activo (`linear_svc` `20261119-1555`) y el script
+[`tests/rendimiento/rendimiento.py`](../tests/rendimiento/README.md) (httpx), contra la API
+levantada con `uvicorn` (un proceso, sin `--reload`) en un portátil con Intel Core i5-1135G7
+(4 núcleos, 8 hilos) y Linux.
+
+Se hicieron **50 clasificaciones seguidas de cada tipo**, después de una de calentamiento que no
+se cuenta:
+
+- **Texto pegado:** 50 resúmenes distintos del conjunto de prueba de WOS (entre 50 y 770
+  palabras).
+- **PDF de 20 páginas:** 50 PDF generados por el script, cada uno con título, `Abstract`,
+  `Keywords` y 19 páginas más de cuerpo (unas 7.000 palabras en total). La API los lee
+  completos, quita encabezados y pies, localiza el resumen y lo clasifica.
+
+| Entrada | Mediana | p95 | Máximo | Meta (RNF-01) | ¿Cumple? |
+| --- | --- | --- | --- | --- | --- |
+| Texto pegado | 216 ms | **231 ms** | 329 ms | p95 < 2 s | ✅ |
+| PDF de 20 páginas | 227 ms | **234 ms** | 243 ms | p95 < 5 s | ✅ |
+
+El tiempo se mide en el cliente, desde que sale la petición hasta que llega la respuesta: incluye
+la red local, la extracción, el modelo y el guardado en SQLite. El `tiempo_ms` que informa la
+propia API es casi igual (p95 de 226 y 230 ms), así que la red y la serialización no pesan.
+
+Casi todo el tiempo es del modelo, sobre todo de la lematización con spaCy. Leer las 20 páginas
+del PDF solo suma unos 10 ms. El margen es de unas 8 veces para el texto y de 20 para el PDF.
+
+Límites de la medición:
+
+- Las peticiones son seguidas, de una en una, como en el plan de pruebas. No se midió la carga
+  con varios usuarios a la vez.
+- Los PDF son generados, con texto seleccionable. Un PDF real con imágenes pesa más, pero la API
+  solo lee el texto (y como máximo 30 páginas).
+- Con Docker (`--url http://localhost:8080`) se suma el paso por nginx, que no se midió aquí.
