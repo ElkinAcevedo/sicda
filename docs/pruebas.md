@@ -1,7 +1,7 @@
 # Informe de pruebas
 
-Resultados del plan de pruebas (sección 11 del documento de diseño). Se completa durante la
-Fase V; cada sección indica la fecha y el commit en que se midió.
+Resultados del plan de pruebas (sección 11 del documento de diseño). Cada sección indica la
+fecha y el commit en que se midió.
 
 | Tipo | Criterio de aceptación | Estado |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ Fase V; cada sección indica la fecha y el commit en que se midió.
 | Integración (API) | Todos los contratos responden según lo especificado | ✅ `backend/tests/api/` |
 | Extremo a extremo | El flujo completo funciona en Chrome y Firefox | ✅ Ver [Extremo a extremo](#extremo-a-extremo) |
 | Rendimiento | p95 < 2 s para texto y < 5 s para PDF | ✅ p95 de 0,23 s en ambos (ver [Rendimiento](#rendimiento)) |
-| Usabilidad | Tasa de éxito ≥ 90 % y SUS ≥ 70 | ⏳ |
+| Usabilidad | Tasa de éxito ≥ 90 % y SUS ≥ 70 | ⚪ No realizada (ver [Usabilidad](#usabilidad)) |
 
 ## Cobertura
 
@@ -131,3 +131,16 @@ Límites de la medición:
 - Los PDF son generados, con texto seleccionable. Un PDF real con imágenes pesa más, pero la API
   solo lee el texto (y como máximo 30 páginas).
 - Con Docker (`--url http://localhost:8080`) se suma el paso por nginx, que no se midió aquí.
+
+## Usabilidad
+
+**No se realizó.** El plan preveía que 5 a 8 usuarios (estudiantes y docentes) completaran
+4 tareas sin ayuda y respondieran el cuestionario SUS: clasificar un PDF, interpretar una
+clasificación que pide revisión, encontrar una clasificación en el historial e identificar el
+modelo con mejor desempeño en el panel de métricas. Por el tiempo disponible para la entrega se
+decidió omitirla, así que **RNF-04** (primer documento clasificado en menos de 1 minuto sin
+ayuda y SUS ≥ 70) **queda sin verificar** y pasa a trabajo futuro.
+
+Lo que sí está comprobado del flujo es que funciona de extremo a extremo en Chrome y Firefox
+(ver [Extremo a extremo](#extremo-a-extremo)); no se midió si un usuario nuevo lo entiende sin
+ayuda.
