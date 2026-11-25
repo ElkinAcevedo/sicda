@@ -214,7 +214,7 @@ El dataset **no se incluye en el repositorio** por su tamaño. Las instrucciones
 | II. Extracción y procesamiento del texto | 2–4 | ✅ Extracción PDF/DOCX/TXT y preprocesamiento con pruebas |
 | III. Entrenamiento y evaluación de modelos | 4–7 | ✅ Naive Bayes, SVM y DistilBERT comparados; modelo activo SVM plano ([ADR 0003](docs/decisiones/0003-seleccion-modelo.md)) |
 | IV. Desarrollo e integración de la aplicación | 6–9 | ✅ API REST, persistencia, dashboard con 4 vistas y `docker compose up` verificado |
-| V. Pruebas, ajustes y documentación | 10–12 | 🚧 Cobertura, e2e, 30 artículos externos y rendimiento listos ([informe](docs/pruebas.md)); faltan usabilidad (SUS) e informe final |
+| V. Pruebas, ajustes y documentación | 10–12 | 🚧 Cobertura, e2e, 30 artículos externos y rendimiento listos ([informe](docs/pruebas.md)); la prueba de usabilidad se omitió (trabajo futuro); falta el documento final |
 
 ## Cómo contribuir
 
