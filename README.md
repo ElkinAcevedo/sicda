@@ -137,15 +137,15 @@ La forma más sencilla es con Docker: no hace falta instalar Python ni Node ni e
    cd sicda
    ```
 
-3. Descarga **`sicda-modelos-v1.0.0.zip`** (unos 75 MB) de la página de [*Releases*](https://github.com/ElkinAcevedo/sicda/releases) y descomprímelo **dentro de la carpeta `sicda`**. Deben quedar `models/activo.json` y `data/processed/categorias.json`. Desde la terminal:
+3. Descarga **`sicda-modelos-v1.0.0.zip`** (unos 75 MB) de la página de [*release* «Modelos entrenados v1.0.0»](https://github.com/ElkinAcevedo/sicda/releases/tag/modelos-v1.0.0) y descomprímelo **dentro de la carpeta `sicda`**. Deben quedar `models/activo.json` y `data/processed/categorias.json`. Desde la terminal:
 
    ```bash
    # Linux / macOS
-   curl -LO https://github.com/ElkinAcevedo/sicda/releases/download/v1.0.0/sicda-modelos-v1.0.0.zip
+   curl -LO https://github.com/ElkinAcevedo/sicda/releases/download/modelos-v1.0.0/sicda-modelos-v1.0.0.zip
    unzip sicda-modelos-v1.0.0.zip
 
    # Windows (PowerShell)
-   Invoke-WebRequest https://github.com/ElkinAcevedo/sicda/releases/download/v1.0.0/sicda-modelos-v1.0.0.zip -OutFile sicda-modelos.zip
+   Invoke-WebRequest https://github.com/ElkinAcevedo/sicda/releases/download/modelos-v1.0.0/sicda-modelos-v1.0.0.zip -OutFile sicda-modelos.zip
    Expand-Archive sicda-modelos.zip -DestinationPath . -Force
    ```
 
