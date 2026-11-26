@@ -123,7 +123,43 @@ Cada carpeta principal tiene su propio `README.md` con los detalles.
 
 > La API y el dashboard están completos. El modelo activo es **TF-IDF + SVM lineal (plano)**, con F1-macro de 0,91 en dominio y 0,79 en área sobre el conjunto de prueba ([ADR 0003](docs/decisiones/0003-seleccion-modelo.md)).
 >
-> Para clasificar se necesitan los modelos entrenados en `models/` y las particiones en `data/processed/`, que no se versionan. Antes de levantar la API, sigue [`data/README.md`](data/README.md) y [`ml/README.md`](ml/README.md) (generar los datos, entrenar y publicar `models/activo.json`). Sin un modelo activo la API arranca, pero `/clasificaciones` responde `503 MODELO_NO_DISPONIBLE`.
+> Para clasificar se necesitan los modelos entrenados en `models/` y las particiones en `data/processed/`, que no se versionan. Para **solo usar el sistema**, descárgalos ya entrenados (ver [Probar SICDA en otra máquina](#probar-sicda-en-otra-máquina)). Para entrenarlos tú mismo, sigue [`data/README.md`](data/README.md) y [`ml/README.md`](ml/README.md). Sin un modelo activo la API arranca, pero `/clasificaciones` responde `503 MODELO_NO_DISPONIBLE`.
+
+### Probar SICDA en otra máquina
+
+La forma más sencilla es con Docker: no hace falta instalar Python ni Node ni entrenar nada.
+
+1. Instala [Git](https://git-scm.com) y [Docker Desktop](https://docs.docker.com/get-docker/) (en Linux basta Docker Engine con el plugin Compose) y abre Docker.
+2. Clona el repositorio:
+
+   ```bash
+   git clone https://github.com/ElkinAcevedo/sicda.git
+   cd sicda
+   ```
+
+3. Descarga **`sicda-modelos-v1.0.0.zip`** (unos 75 MB) de la página de [*release* «Modelos entrenados v1.0.0»](https://github.com/ElkinAcevedo/sicda/releases/tag/modelos-v1.0.0) y descomprímelo **dentro de la carpeta `sicda`**. Deben quedar `models/activo.json` y `data/processed/categorias.json`. Desde la terminal:
+
+   ```bash
+   # Linux / macOS
+   curl -LO https://github.com/ElkinAcevedo/sicda/releases/download/modelos-v1.0.0/sicda-modelos-v1.0.0.zip
+   unzip sicda-modelos-v1.0.0.zip
+
+   # Windows (PowerShell)
+   Invoke-WebRequest https://github.com/ElkinAcevedo/sicda/releases/download/modelos-v1.0.0/sicda-modelos-v1.0.0.zip -OutFile sicda-modelos.zip
+   Expand-Archive sicda-modelos.zip -DestinationPath . -Force
+   ```
+
+4. Levanta el sistema (la primera vez tarda varios minutos mientras construye las imágenes):
+
+   ```bash
+   docker compose up --build
+   ```
+
+5. Abre el dashboard en <http://localhost:8080>. La API y su documentación quedan en <http://localhost:8000/docs>. Para detenerlo, `Ctrl+C` o `docker compose down`.
+
+El paquete trae el modelo activo (SVM lineal), las predicciones guardadas de los tres modelos para el panel de métricas y las particiones de validación y prueba. No incluye los `.joblib` de los demás modelos ni los pesos de DistilBERT, que solo hacen falta para reentrenar o cambiar de modelo. Para generar un paquete nuevo después de reentrenar: `./scripts/empaquetar_modelos.sh sicda-modelos-vX.Y.Z.zip`.
+
+Si prefieres ejecutarlo sin Docker, descomprime el mismo paquete y sigue los pasos 1 y 2 de abajo.
 
 ### Requisitos
 
