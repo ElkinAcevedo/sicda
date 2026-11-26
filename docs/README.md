@@ -4,6 +4,7 @@
 | --- | --- |
 | Propuesta del proyecto | Objetivos, metodología y cronograma aprobados. |
 | Documento de diseño | Requerimientos, arquitectura, datos, pipeline de ML, API, interfaz y plan de pruebas. |
+| [`panorama-del-proyecto.md`](panorama-del-proyecto.md) | Guía completa del proyecto: qué se hizo, cómo funciona de principio a fin y dónde está cada cosa en el código. |
 | [`pruebas.md`](pruebas.md) | Informe de pruebas: resultados del plan de pruebas (cobertura, e2e, rendimiento, usabilidad). |
 | [`decisiones/`](decisiones/) | Registro de decisiones de arquitectura (ADR): qué se decidió, por qué y qué alternativas se descartaron. |
 
