@@ -1,4 +1,4 @@
-// Íconos de línea (24×24, trazo de 1,8) para la barra lateral. Decorativos: aria-hidden.
+// Íconos de línea (24×24, trazo de 1,8). Decorativos: aria-hidden.
 import type { SVGProps } from 'react'
 
 function Icono({ children, ...props }: SVGProps<SVGSVGElement>) {
@@ -25,6 +25,17 @@ export function IconoClasificar(props: SVGProps<SVGSVGElement>) {
       <path d="M12 15V4" />
       <path d="m7 9 5-5 5 5" />
       <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+    </Icono>
+  )
+}
+
+/** Hoja con la esquina doblada y renglones: un documento. */
+export function IconoDocumento(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icono {...props}>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+      <path d="M9 13h6M9 17h6" />
     </Icono>
   )
 }

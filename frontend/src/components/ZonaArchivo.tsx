@@ -1,5 +1,6 @@
 import { type DragEvent, useId, useRef, useState } from 'react'
 import { EXTENSIONES, TAMANO_MAXIMO_MB } from '@/lib/archivos'
+import { IconoDocumento } from '@/components/iconos'
 
 /** Zona de arrastrar y soltar (también se puede hacer clic o usar el teclado). */
 export function ZonaArchivo({
@@ -34,9 +35,7 @@ export function ZonaArchivo({
           : 'border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900'
       }`}
     >
-      <span aria-hidden="true" className="text-4xl">
-        📄
-      </span>
+      <IconoDocumento className="h-10 w-10 text-indigo-500 dark:text-indigo-400" />
       <p className="text-lg font-medium">Arrastra aquí tu documento</p>
       <p id={idAyuda} className="text-sm text-slate-500 dark:text-slate-400">
         PDF, DOCX o TXT · máximo {TAMANO_MAXIMO_MB} MB · en inglés
